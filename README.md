@@ -39,4 +39,29 @@ $ cd consul-vault-ecs-workshop
 2. Switch to the `step1` branch.
 ```sh
 $ git checkout step1
+Branch 'step1' set up to track remote branch 'step1' from 'origin'.
+Switched to a new branch 'step1'
+$
 ```
+
+3. Run `terraform init` to download the required Terraform plugins.
+```sh
+$ terraform init
+Initializing modules...
+- module.infra
+  Getting source "github.com/terraform-community-modules/tf_aws_ecs?ref=v5.2.0"
+- module.vpc
+  Found version 1.43.2 of terraform-aws-modules/vpc/aws on registry.terraform.io
+  Getting source "terraform-aws-modules/vpc/aws"
+
+Initializing provider plugins...
+- Checking for available provider plugins on https://releases.hashicorp.com...
+- Downloading plugin for provider "template" (1.0.0)...
+- Downloading plugin for provider "aws" (1.36.0)...
+
+Terraform has been successfully initialized!
+...
+$
+```
+
+
