@@ -82,5 +82,34 @@ persisted to local or remote state storage.
 
 data.aws_region.current: Refreshing state...
 ...
+------------------------------------------------------------------------
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+...
+------------------------------------------------------------------------
+
+Note: You didn't specify an "-out" parameter to save this plan, so Terraform
+can't guarantee that exactly these actions will be performed if
+"terraform apply" is subsequently run.
 ```
-Once the `terraform plan` completes, it'll show you 
+Once the `terraform plan` completes, it'll show you a bunch of resources to be created.  Create them with a `terraform apply`.
+```sh
+$ terraform apply
+data.aws_region.current: Refreshing state...
+...
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+...
+Apply complete! Resources: 86 added, 0 changed, 0 destroyed.
+```
+
+Log into the [ECS console](https://console.aws.amazon.com/ecs) (make sure you've selected the correct region) and you should see your two ECS clusters, `infra-<REGION>_1` and `infra-<REGION>_2`.  Each should have 0 services and tasks, and 2 container instances.
+
+
