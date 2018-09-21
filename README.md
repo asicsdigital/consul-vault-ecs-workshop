@@ -48,8 +48,10 @@ $
 ```sh
 $ terraform init
 Initializing modules...
-- module.infra
-  Getting source "github.com/terraform-community-modules/tf_aws_ecs?ref=v5.2.0"
+- module.infra_1
+  Getting source "github.com/terraform-community-modules/tf_aws_ecs?ref=v5.4.0"
+- module.infra_2
+  Getting source "github.com/terraform-community-modules/tf_aws_ecs?ref=v5.4.0"
 - module.vpc
   Found version 1.43.2 of terraform-aws-modules/vpc/aws on registry.terraform.io
   Getting source "terraform-aws-modules/vpc/aws"
@@ -64,4 +66,21 @@ Terraform has been successfully initialized!
 $
 ```
 
+4. You'll need to set one Terraform variable in order to proceed; that's `vpc_name`, which will identify the [Amazon VPC](https://aws.amazon.com/vpc/) in which you'll provision resources.  VPC names have some limitations; for this workshop, we ask that you choose a name that's a valid [DNS label](https://en.wikipedia.org/wiki/Domain_name#Domain_name_syntax).  You can run the script `init_tfvars.sh` to generate a `_terraform.auto.tfvars` file; this will try to generate a valid value for `vpc_name`.
+```sh
+$ ./init_tfvars.sh
+vpc_name = "shuff-63899"
+$
+```
 
+5. Now you're ready for a Terraform run!  This first step will provision a VPC (with associated subnets, Internet gateway, NAT gateways, route tables, etc.) and two ECS clusters.  No services will be deployed to those clusters yet; that's for the next steps in this workshop.
+```sh
+$ terraform plan
+Refreshing Terraform state in-memory prior to plan...
+The refreshed state will be used to calculate this plan, but will not be
+persisted to local or remote state storage.
+
+data.aws_region.current: Refreshing state...
+...
+```
+Once the `terraform plan` completes, it'll show you 
