@@ -112,4 +112,21 @@ Apply complete! Resources: 86 added, 0 changed, 0 destroyed.
 
 Log into the [ECS console](https://console.aws.amazon.com/ecs) (make sure you've selected the correct region) and you should see your two ECS clusters, `infra-<REGION>_1` and `infra-<REGION>_2`.  Each should have 0 services and tasks, and 2 container instances.
 
+## Step 2
 
+1. Switch to the `step2` branch.
+```sh
+$ git checkout step2
+Branch 'step2' set up to track remote branch 'step2' from 'origin'.
+Switched to a new branch 'step2'
+$
+```
+
+2. Generate a HTTP Basic Auth password to enable access to your Consul cluster.  This deployment also supports OAuth2, but we're not going to configure that right now in the interest of time.  This branch has an updated version of the `init_tfvars.sh` script; run this to add some new Terraform variables to `_terraform.auto.tfvars`.
+```sh
+$ ./init_tfvars.sh
+vpc_name = "shuff-63899"
+# password: 21661
+consul_sha_htpasswd_hash = "consul:{SHA}6WZ72ox3d/sTju9YbIpGtEuOPgQ="
+$
+```
