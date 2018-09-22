@@ -5,7 +5,7 @@ locals {
 
 provider "aws" {
   region  = "us-east-1"
-  version = "~> 1.33"
+  version = "~> 1.37"
 }
 
 provider "template" {
