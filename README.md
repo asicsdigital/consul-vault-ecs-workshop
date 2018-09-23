@@ -130,3 +130,60 @@ vpc_name = "shuff-63899"
 consul_sha_htpasswd_hash = "consul:{SHA}6WZ72ox3d/sTju9YbIpGtEuOPgQ="
 $
 ```
+Make note of the password!  You'll need that later on to connect to the Consul REST API.
+
+3. Run another `terraform apply` to create your Consul cluster.
+```sh
+$ terraform apply
+data.aws_region.current: Refreshing state...
+...
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+...
+Apply complete! Resources: 17 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+consul_url = http://consul20180923153406741500000005-1418999670.us-east-1.elb.amazonaws.com
+```
+See that `consul_url` output?  That's the public-facing endpoint of your new Consul cluster.  Make note of that as well.  If you forget it, run `terraform output` in your current directory.
+
+4. Wait a minute or two for your Consul nodes to start up and complete their cluster election.  You can watch the logs via the ECS console; look at either of the two ECS clusters you created, select the `consul-workshop-primary` or `consul-workshop-secondary` service, and then look at the logs for the `consul_cluster-workshop` containers.
+
+5.  Send a basic healthcheck to the proxy server in front of the Consul REST API to make sure it's healthy.  You'll need to construct your own HTTP request based on the password and the URI you made note of earlier.
+```sh
+$ curl -s --user consul:21661 http://consul20180923153406741500000005-1418999670.us-east-1.elb.amazonaws.com/ping
+OK
+$
+```
+Now use the Consul status API to confirm that the leader election has completed.
+```sh
+$ curl -s --user consul:21661 http://consul20180923153406741500000005-1418999670.us-east-1.elb.amazonaws.com/v1/status/leader
+"10.0.20.248:8300
+$
+```
+Finally, use the Consul catalog API to get some information about the nodes in the cluster.  I've piped this output through [jq](https://stedolan.github.io/jq/) to make it easier to read.
+```sh
+$ curl -s --user consul:21661 http://consul20180923153406741500000005-1418999670.us-east-1.elb.amazonaws.com/v1/catalog/nodes | jq .
+[
+  {
+    "ID": "e985c15e-edf1-2022-101b-42435909b77b",
+    "Node": "ip-10-0-10-247",
+    "Address": "10.0.10.247",
+    "Datacenter": "shuff-63899-us-east-1",
+    "TaggedAddresses": {
+      "lan": "10.0.10.247",
+      "wan": "10.0.10.247"
+    },
+    "Meta": {
+      "consul-network-segment": ""
+    },
+    "CreateIndex": 7,
+    "ModifyIndex": 11
+  },
+...
+$
+```
