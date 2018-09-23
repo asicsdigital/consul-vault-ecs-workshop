@@ -187,3 +187,27 @@ $ curl -s --user consul:21661 http://consul20180923153406741500000005-1418999670
 ...
 $
 ```
+
+## Step 3
+
+1. Switch to the `step3` branch.
+```sh
+$ git checkout step3
+Branch 'step3' set up to track remote branch 'step3' from 'origin'.
+Switched to a new branch 'step3'
+$
+```
+
+2. Generate an unseal key for use with Vault and encrypt it with [AWS KMS](https://aws.amazon.com/kms/).  This branch has an updated version of the `init_tfvars.sh` script; run this to add some new Terraform variables to `_terraform.auto.tfvars`.
+```sh
+$ ./init_tfvars.sh
+vpc_name = "shuff-63899"
+# password: 21661
+consul_sha_htpasswd_hash = "consul:{SHA}6WZ72ox3d/sTju9YbIpGtEuOPgQ="
+
+# vault unseal key: 59987
+kms_payload = "AQICAHh48hy2SYp5yAT0HDpBwKIMm236E3nD6UVUdash6yDq6gHZ6K6r4LoOEz/XjwlMvUw/AAAAYzBhBgkqhkiG9w0BBwagVDBSAgEAME0GCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMttzXAIXUQNkLieGfAgEQgCCairsSyw/oowzXG4jOuOlZCLEKb1zIezOsVRkg6oVIZw=="
+$
+```
+
+
