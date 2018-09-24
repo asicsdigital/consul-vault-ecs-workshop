@@ -15,7 +15,7 @@ data "aws_kms_secrets" "secrets" {
 }
 
 module "vault" {
-  source          = "github.com/asicsdigital/terraform-aws-vault?ref=v1.3.0"
+  source          = "github.com/asicsdigital/terraform-aws-vault?ref=v1.3.1"
   alb_log_bucket  = "${local.consul_bucket}"
   vault_image     = "${local.vault_image}"
   ecs_cluster_ids = "${list(module.infra_1.cluster_id, module.infra_2.cluster_id)}"
