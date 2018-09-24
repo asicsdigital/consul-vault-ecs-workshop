@@ -35,3 +35,14 @@ variable "consul_sha_htpasswd_hash" {
   type        = "string"
   description = "htpasswd SHA hash for basic auth to Consul (generate with `htpasswd -ns consul`)"
 }
+
+variable "kms_payload" {
+  type        = "string"
+  description = "CiphertextBlob of KMS-encrypted unseal key for Vault"
+  default     = ""
+}
+
+variable "initialize_vault" {
+  type    = "string"
+  default = "false"
+}
