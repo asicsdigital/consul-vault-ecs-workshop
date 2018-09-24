@@ -295,3 +295,9 @@ vault_url = http://vault-20180923200817732700000005-403418657.us-east-1.elb.amaz
 ```
 
 8. At this point you'll have a working Vault deployment, but you won't be able to do anything with it, because Vault access policies deny all by default.  Configuring your new Vault deployment is outside the scope of this lab; use the root token you saved earlier to perform the initial configuration, then revoke it once you've set up another way to get in.
+
+You can confirm vault is up and running with by running :
+
+*  `VAULT_TOKEN=<root token here> VAULT_ADDR="vault addr" vault status`
+*  `VAULT_TOKEN=<root token here> VAULT_ADDR="vault addr" vault write secret/foo value=bar`
+*  `VAULT_TOKEN=<root token here> VAULT_ADDR="vault addr vault read secret/foo`
