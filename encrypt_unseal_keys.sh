@@ -15,6 +15,7 @@ kms_alias=$(terraform output -no-color kms_key_alias)
 kms_payload=$(aws kms encrypt --key-id "${kms_alias}" --encryption-context purpose=vault_unseal --plaintext "${plaintext}" --output text --query CiphertextBlob)
 
 sed -i.bak -e '/initialize_vault/d' $var_file
+sed -i.bak -e '/kms_payload/d' $var_file
 rm -f "${var_file}.bak"
 
 cat >>"$var_file" <<TFVARS
