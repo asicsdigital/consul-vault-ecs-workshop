@@ -199,6 +199,10 @@ $ curl -s --user consul:21661 http://consul20180923153406741500000005-1418999670
 ...
 $
 ```
+Or, if you have the `consul` binary installed locally, you can use that.
+```sh
+$ CONSUL_HTTP_ADDR=http://consul20180923153406741500000005-1418999670.us-east-1.elb.amazonaws.com CONSUL_HTTP_AUTH=consul:21661 consul catalog nodes
+```
 
 ## Step 3
 
