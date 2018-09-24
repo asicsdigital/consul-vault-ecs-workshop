@@ -27,7 +27,8 @@ data "aws_iam_policy_document" "bucket_policy" {
 }
 
 resource "aws_s3_bucket" "consul" {
-  bucket = "${local.consul_bucket}"
-  region = "${local.region}"
-  policy = "${data.aws_iam_policy_document.bucket_policy.json}"
+  bucket        = "${local.consul_bucket}"
+  region        = "${local.region}"
+  policy        = "${data.aws_iam_policy_document.bucket_policy.json}"
+  force_destroy = true
 }
