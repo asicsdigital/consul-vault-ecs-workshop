@@ -132,7 +132,19 @@ $
 ```
 Make note of the password!  You'll need that later on to connect to the Consul REST API.
 
-3. Run another `terraform apply` to create your Consul cluster.
+3. Run another `terraform init` to download new dependencies.
+```sh
+$ terraform init
+Initializing modules...
+- module.infra_1
+  Getting source "github.com/terraform-community-modules/tf_aws_ecs?ref=v5.4.0"
+- module.infra_2
+  Getting source "github.com/terraform-community-modules/tf_aws_ecs?ref=v5.4.0"
+...
+$
+```
+
+4. Run another `terraform apply` to create your Consul cluster.
 ```sh
 $ terraform apply
 data.aws_region.current: Refreshing state...
@@ -151,9 +163,9 @@ consul_url = http://consul20180923153406741500000005-1418999670.us-east-1.elb.am
 ```
 See that `consul_url` output?  That's the public-facing endpoint of your new Consul cluster.  Make note of that as well.  If you forget it, run `terraform output` in your current directory.
 
-4. Wait a minute or two for your Consul nodes to start up and complete their cluster election.  You can watch the logs via the ECS console; look at either of the two ECS clusters you created, select the `consul-workshop-primary` or `consul-workshop-secondary` service, and then look at the logs for the `consul_cluster-workshop` containers.
+5. Wait a minute or two for your Consul nodes to start up and complete their cluster election.  You can watch the logs via the ECS console; look at either of the two ECS clusters you created, select the `consul-workshop-primary` or `consul-workshop-secondary` service, and then look at the logs for the `consul_cluster-workshop` containers.
 
-5.  Send a basic healthcheck to the proxy server in front of the Consul REST API to make sure it's healthy.  You'll need to construct your own HTTP request based on the password and the URI you made note of earlier.
+6.  Send a basic healthcheck to the proxy server in front of the Consul REST API to make sure it's healthy.  You'll need to construct your own HTTP request based on the password and the URI you made note of earlier.
 ```sh
 $ curl -s --user consul:21661 http://consul20180923153406741500000005-1418999670.us-east-1.elb.amazonaws.com/ping
 OK
@@ -198,16 +210,84 @@ Switched to a new branch 'step3'
 $
 ```
 
-2. Generate an unseal key for use with Vault and encrypt it with [AWS KMS](https://aws.amazon.com/kms/).  This branch has an updated version of the `init_tfvars.sh` script; run this to add some new Terraform variables to `_terraform.auto.tfvars`.
+2. This branch has an updated `init_tfvars.sh` script to add a new Terraform variable for this next step.
 ```sh
-$ ./init_tfvars.sh
+$./init_tfvars.sh
 vpc_name = "shuff-63899"
 # password: 21661
 consul_sha_htpasswd_hash = "consul:{SHA}6WZ72ox3d/sTju9YbIpGtEuOPgQ="
 
-# vault unseal key: 59987
-kms_payload = "AQICAHh48hy2SYp5yAT0HDpBwKIMm236E3nD6UVUdash6yDq6gHZ6K6r4LoOEz/XjwlMvUw/AAAAYzBhBgkqhkiG9w0BBwagVDBSAgEAME0GCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMttzXAIXUQNkLieGfAgEQgCCairsSyw/oowzXG4jOuOlZCLEKb1zIezOsVRkg6oVIZw=="
+initialize_vault = true
+```
+
+3. Run another `terraform init` to download new dependencies.
+```sh
+$ terraform init
+Initializing modules...
+- module.infra_1
+  Getting source "github.com/terraform-community-modules/tf_aws_ecs?ref=v5.4.0"
+- module.infra_2
+  Getting source "github.com/terraform-community-modules/tf_aws_ecs?ref=v5.4.0"
+...
 $
 ```
 
+4. Run another `terraform apply` to initialize your Vault storage backend.
+```sh
+# terraform apply
+aws_kms_key.vault: Refreshing state... (ID: 9ed01a78-c4dd-4b04-ba0c-a31b86afb39e)
+data.aws_availability_zones.available: Refreshing state...
+...
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
 
+  Enter a value: yes
+...
+Apply complete! Resources: 9 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+consul_url = http://consul20180923153406741500000005-1418999670.us-east-1.elb.amazonaws.com
+kms_key_alias = arn:aws:kms:us-east-1:332913666507:alias/vault-20180923190839497600000001
+vault_url = http://vault-20180923200817732700000005-403418657.us-east-1.elb.amazonaws.com
+$
+```
+
+5. You'll now need to retrieve the three unseal keys, which have been written to the `vault-init` task's log.  In the ECS console, find your first ECS cluster, browse to the `vault-init-workshop` service, and look at the task logs.  You want the logs for the `vault-init` task; the log messages should display three unseal keys and a root token.  These unseal keys are crucial to accessing your Vault cluster; save them and the root token somewhere secure!  They'll be purged from this log after a day.
+
+6. Use [AWS KMS](https://aws.amazon.com/kms/) to encrypt your Vault unseal keys.  There's an `encrypt_unseal_keys.sh` script that takes the three keys as arguments; it'll encrypt them and update your Terraform variables appropriately.  Be sure to enclose the keys in single quotes to avoid shell interpolation of metacharacters!
+```sh
+$ ./encrypt_unseal_keys.sh 'KEY1' 'KEY2' 'KEY3'
+vpc_name = "shuff-63899"
+# password: 21661
+consul_sha_htpasswd_hash = "consul:{SHA}6WZ72ox3d/sTju9YbIpGtEuOPgQ="
+
+kms_payload = "AQICAHh48hy2SYp5yAT0HDpBwKIMm236E3nD6UVUdash6yDq6gHXRquC1z3spR78+5X6VCZeAAAA6TCB5gYJKoZIhvcNAQcGoIHYMIHVAgEAMIHPBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDCTF5jxy7hiGxTYHzQIBEICBobiE2mJ0lcsYq0CjD1M9n365cGscjHZu2XIboHeujsRzYL/ZLO35GRN/ndpe/Csj9DqWerFaLqfEDM+zqEBNB/HJwrKT5uFfBDyZjmDrAbk6cRtJiHcB3R9UWVbrTKGMipaogmvwI63lU8u3j4eGJiNj2Iox3nNvidFe7e0tAjhGG2CW4trjQFwB4N9Cwh53GNPFY1hQg3nb2RKpRTjfs6F8"
+$
+```
+
+7. Now, run one more `terraform apply` to get rid of the one-off initialization task and deploy your complete Vault cluster.
+```sh
+$ terraform apply
+aws_kms_key.vault: Refreshing state... (ID: 9ed01a78-c4dd-4b04-ba0c-a31b86afb39e)
+aws_iam_role.ecsServiceRole: Refreshing state... (ID: terraform-20180923200815340300000002)
+...
+Plan: 3 to add, 0 to change, 4 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+...
+Apply complete! Resources: 3 added, 0 changed, 4 destroyed.
+
+Outputs:
+
+consul_url = http://consul20180923153406741500000005-1418999670.us-east-1.elb.amazonaws.com
+kms_key_alias = arn:aws:kms:us-east-1:332913666507:alias/vault-20180923190839497600000001
+vault_url = http://vault-20180923200817732700000005-403418657.us-east-1.elb.amazonaws.com
+```
+
+8. At this point you'll have a working Vault deployment, but you won't be able to do anything with it, because Vault access policies deny all by default.  Configuring your new Vault deployment is outside the scope of this lab; use the root token you saved earlier to perform the initial configuration, then revoke it once you've set up another way to get in.
