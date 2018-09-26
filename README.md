@@ -214,7 +214,7 @@ Switched to a new branch 'step3'
 $
 ```
 
-2. This branch has an updated `init_tfvars.sh` script to add a new Terraform variable for this next step.
+2. This branch has an updated `init_tfvars.sh` script to add a new Terraform variable for this next step. This step utilizes the `aws` CLI, so ensure that an AWS_REGION is set.
 ```sh
 $./init_tfvars.sh
 vpc_name = "shuff-63899"
@@ -258,7 +258,7 @@ vault_url = http://vault-20180923200817732700000005-403418657.us-east-1.elb.amaz
 $
 ```
 
-5. You'll now need to retrieve the three unseal keys, which have been written to the `vault-init` task's log.  In the ECS console, find your first ECS cluster, browse to the `vault-init-workshop` service, and look at the task logs.  You want the logs for the `vault-init` task; the log messages should display three unseal keys and a root token.  These unseal keys are crucial to accessing your Vault cluster; save them and the root token somewhere secure!  They'll be purged from this log after a day.
+5. You'll now need to retrieve the three unseal keys and the root token, which have been written to the `vault-init` task's log.  In the ECS console, find your first ECS cluster, browse to the `vault-init-workshop` service, and look at the task logs.  You want the logs for the `vault-init` task; the log messages should display three unseal keys and a root token.  These unseal keys are crucial to accessing your Vault cluster; save them and the root token somewhere secure!  They'll be purged from this log after a day.
 
 6. Use [AWS KMS](https://aws.amazon.com/kms/) to encrypt your Vault unseal keys.  There's an `encrypt_unseal_keys.sh` script that takes the three keys as arguments; it'll encrypt them and update your Terraform variables appropriately.  Be sure to enclose the keys in single quotes to avoid shell interpolation of metacharacters!
 ```sh
@@ -300,4 +300,4 @@ You can confirm vault is up and running with by installing the Vault client and 
 
 *  `VAULT_TOKEN=<root token here> VAULT_ADDR="vault addr" vault status`
 *  `VAULT_TOKEN=<root token here> VAULT_ADDR="vault addr" vault write secret/foo value=bar`
-*  `VAULT_TOKEN=<root token here> VAULT_ADDR="vault addr vault read secret/foo`
+*  `VAULT_TOKEN=<root token here> VAULT_ADDR="vault addr" vault read secret/foo`
